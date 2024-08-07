@@ -42,7 +42,7 @@ pipeline {
             steps {
                 script {
                     echo "Building Docker image for Nginx web server..."
-                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "-f Dockerfile kubernetes/")
+                    sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Dockerfile kubernetes/"
                 }
             }
         }
