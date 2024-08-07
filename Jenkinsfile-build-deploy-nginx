@@ -78,9 +78,6 @@ pipeline {
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."
                                 sh "kubectl apply -f nginx-service.yaml"
-                                
-                                echo "Updating Kubernetes deployment with new Docker image..."
-                                sh "kubectl set image deployment/nginx-deployment nginx=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                             } catch (Exception e) {
                                 echo "Error: Kubernetes deployment failed. Please check the logs for details."
                                 error "Stopping pipeline due to Kubernetes error."

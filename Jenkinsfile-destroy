@@ -10,7 +10,7 @@ pipeline {
         timestamps()
     }
     stages {
-        stage("Destroy an EKS Cluster") {
+        stage("Destroy terraform resources") {
             steps {
                 script {
                     ansiColor('xterm') {
