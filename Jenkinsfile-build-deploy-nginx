@@ -27,7 +27,7 @@ pipeline {
                     def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
                     echo "Cluster Name: ${cluster_name}"
                     
-                    def load_balancer_ip = sh(script: "kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'", returnStdout: true).trim()
+                    def load_balancer_ip = sh(script: "kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'", returnStdout: true).trim()
                     echo "Load Balancer IP: ${load_balancer_ip}"
                     
                     echo "Updating index.html with Cluster Name and Load Balancer IP..."
