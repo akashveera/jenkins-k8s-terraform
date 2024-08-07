@@ -6,8 +6,3 @@ resource "aws_ecr_repository" "nginx_repo" {
     scan_on_push = true
   }
 }
-
-# Output the repository URL
-output "ecr_repository_url" {
-  value = aws_ecr_repository.nginx_repo.repository_url
-}

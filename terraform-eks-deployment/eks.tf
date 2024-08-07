@@ -9,6 +9,35 @@ module "eks" {
     vpc_id = module.my-vpc.vpc_id
     subnet_ids = module.my-vpc.private_subnets
 
+    access_entries = {
+        jenkins_user = {
+            kubernetes_groups = []
+            principal_arn     = "arn:aws:iam::680729924294:user/jenkins-aws-terraform-user"
+
+            policy_associations = {
+                example = {
+                    policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+                    access_scope = {
+                        type       = "cluster"
+                    }
+                }   
+            }
+        },
+        aws_console_user = {
+            kubernetes_groups = []
+            principal_arn     = "arn:aws:iam::680729924294:role/AWS-486_Akash_Veerabomma_AcctAdmin"
+            policy_associations = {
+                example = {
+                    policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
+                    access_scope = {
+                        type       = "cluster"
+                    }
+                }   
+            }
+        }
+    }
+
+
     tags = {
         environment = "development"
         application = "nginx-app"
