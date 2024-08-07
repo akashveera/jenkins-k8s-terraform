@@ -1,0 +1,66 @@
+pipeline {
+    agent any
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_REGION = 'ap-southeast-2'
+        AWS_ACCOUNT_ID = '680729924294'
+        IMAGE_TAG = "latest"
+        IMAGE_NAME = "nginx-web-server"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                checkout scm
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    dockerImage = docker.build("${IMAGE_NAME}", "-f Dockerfile ./kubernetes/")
+                }
+            }
+        }
+        stage('Login to AWS ECR') {
+            steps {
+                script {
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                }
+            }
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+        stage("Deploy to EKS") {
+            steps {
+                script {
+                    ansiColor('xterm') {
+                        dir('kubernetes') {
+                            try {
+                                echo "Updating kubeconfig for EKS cluster..."
+                                sh "aws eks update-kubeconfig --name test-eks"
+                                echo "Applying nginx deployment..."
+                                sh "kubectl apply -f nginx-deployment.yaml"
+                                echo "Applying nginx service..."
+                                sh "kubectl apply -f nginx-service.yaml"
+                            } catch (Exception e) {
+                                echo "Error: Kubernetes deployment failed. Please check the logs for details."
+                                error "Stopping pipeline due to Kubernetes error."
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            cleanWs()
+        }
+    }
+}
