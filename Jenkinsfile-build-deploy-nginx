@@ -46,7 +46,6 @@ pipeline {
                         sh "docker build -t ${IMAGE_NAME}:${IMAGE_TAG} -f Dockerfile kubernetes/"
                     } catch (Exception e) {
                         echo "Error during Docker build process:"
-                        sh "docker logs $(docker ps -lq)" // Show logs from the last Docker container
                         throw e // Re-throw the exception to fail the build
                     }
                 }
