@@ -7,23 +7,49 @@ pipeline {
         AWS_ACCOUNT_ID = '680729924294'
         IMAGE_TAG = "latest"
         IMAGE_NAME = "nginx-web-server"
+        EKS_CLUSTER_NAME = "test-eks"
     }
     stages {
         stage('Checkout') {
             steps {
-                checkout scm
+                script {
+                    echo "Checking out the code from SCM..."
+                    checkout scm
+                }
+            }
+        }
+        stage('Update index.html') {
+            steps {
+                script {
+                    echo "Fetching EKS cluster name and Load Balancer IP..."
+                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                    
+                    def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
+                    echo "Cluster Name: ${cluster_name}"
+                    
+                    def load_balancer_ip = sh(script: "kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'", returnStdout: true).trim()
+                    echo "Load Balancer IP: ${load_balancer_ip}"
+                    
+                    echo "Updating index.html with Cluster Name and Load Balancer IP..."
+                    sh """
+                        sed -i 's/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/' kubernetes/index.html
+                        sed -i 's/LOAD_BALANCER_IP_PLACEHOLDER/${load_balancer_ip}/' kubernetes/index.html
+                    """
+                }
             }
         }
         stage('Build Docker Image') {
             steps {
                 script {
-                    dockerImage = docker.build("${IMAGE_NAME}", "-f Dockerfile ./kubernetes/")
+                    echo "Building Docker image for Nginx web server..."
+                    dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "-f Dockerfile ./kubernetes/")
                 }
             }
         }
         stage('Login to AWS ECR') {
             steps {
                 script {
+                    echo "Logging in to AWS ECR..."
                     sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                 }
             }
@@ -31,23 +57,25 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 script {
+                    echo "Tagging and pushing Docker image to ECR..."
                     sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                     sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
-        stage("Deploy to EKS") {
+        stage('Deploy to EKS') {
             steps {
                 script {
                     ansiColor('xterm') {
                         dir('kubernetes') {
                             try {
-                                echo "Updating kubeconfig for EKS cluster..."
-                                sh "aws eks update-kubeconfig --name test-eks"
-                                echo "Applying nginx deployment..."
+                                echo "Applying Kubernetes deployment for Nginx..."
                                 sh "kubectl apply -f nginx-deployment.yaml"
-                                echo "Applying nginx service..."
+                                echo "Applying Kubernetes service for Nginx..."
                                 sh "kubectl apply -f nginx-service.yaml"
+                                
+                                echo "Updating Kubernetes deployment with new Docker image..."
+                                sh "kubectl set image deployment/nginx-deployment nginx=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                             } catch (Exception e) {
                                 echo "Error: Kubernetes deployment failed. Please check the logs for details."
                                 error "Stopping pipeline due to Kubernetes error."
@@ -60,7 +88,10 @@ pipeline {
     }
     post {
         always {
-            cleanWs()
+            script {
+                echo "Cleaning up workspace..."
+                cleanWs()
+            }
         }
     }
 }
