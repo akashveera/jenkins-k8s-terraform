@@ -42,9 +42,7 @@ pipeline {
                 script {
                     try {
                         echo "Building Docker image for Nginx web server..."
-                        echo "Build Number: ${env.BUILD_NUMBER}"
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                        echo "Image Tag: ${imageTag}"
                         dockerImage = docker.build("${imageTag}", "./kubernetes/")
                         env.IMAGE_TAG = imageTag
                     } catch (Exception e) {
@@ -69,8 +67,16 @@ pipeline {
                     def ecrTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     sh "docker tag ${env.IMAGE_TAG} ${ecrTag}"
                     sh "docker push ${ecrTag}"
-                    //sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
-                    //sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+                }
+            }
+        }
+        stage('Update Deployment File') {
+            steps {
+                script {
+                    echo "Updating Kubernetes deployment file with new image tag..."
+                    sh """
+                        sed -i 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' kubernetes/nginx-deployment.yaml
+                    """
                 }
             }
         }
