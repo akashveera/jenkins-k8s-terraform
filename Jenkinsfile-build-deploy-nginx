@@ -44,7 +44,7 @@ pipeline {
                         echo "Building Docker image for Nginx web server..."
                         echo "Build Number: ${env.BUILD_NUMBER}"
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                        echo "imagetag: ${imageTag}"
+                        echo "Image Tag: ${imageTag}"
                         dockerImage = docker.build("${imageTag}", "./kubernetes/")
                         env.IMAGE_TAG = imageTag
                     } catch (Exception e) {
