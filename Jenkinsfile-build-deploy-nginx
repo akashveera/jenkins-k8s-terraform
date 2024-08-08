@@ -5,7 +5,6 @@ pipeline {
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_REGION = 'ap-southeast-2'
         AWS_ACCOUNT_ID = '680729924294'
-        IMAGE_TAG = "latest"
         IMAGE_NAME = "nginx-web-server"
         EKS_CLUSTER_NAME = "test-eks"
     }
@@ -43,7 +42,9 @@ pipeline {
                 script {
                     try {
                         echo "Building Docker image for Nginx web server..."
-                        dockerImage = docker.build("${IMAGE_NAME}:${IMAGE_TAG}", "./kubernetes/")
+                        def imageTag = "build-${env.BUILD_NUMBER}"
+                        dockerImage = docker.build("${IMAGE_NAME}:${imagetag}", "./kubernetes/")
+                        env.IMAGE_TAG = imageTag
                     } catch (Exception e) {
                         echo "Error during Docker build process:"
                         throw e // Re-throw the exception to fail the build
@@ -78,9 +79,6 @@ pipeline {
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."
                                 sh "kubectl apply -f nginx-service.yaml"
-                                
-                                echo "Updating Kubernetes deployment with new Docker image..."
-                                sh "kubectl set image deployment/nginx nginx=${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                             } catch (Exception e) {
                                 echo "Error: Kubernetes deployment failed. Please check the logs for details."
                                 error "Stopping pipeline due to Kubernetes error."
