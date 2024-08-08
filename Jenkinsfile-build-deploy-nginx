@@ -64,11 +64,9 @@ pipeline {
             steps {
                 script {
                     echo "Tagging and pushing Docker image to ECR..."
-                    def imageTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    def ecrImage = docker.image(imageTag)
-                    ecrImage.push()
-                    ecrImage.push("latest") // Optionally, tag as latest
-
+                    def ecrTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    sh "docker tag ${env.IMAGE_TAG} ${ecrTag}"
+                    sh "docker push ${ecrTag}"
                 }
             }
         }
