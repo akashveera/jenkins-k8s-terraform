@@ -63,14 +63,19 @@ pipeline {
         stage('Push Docker Image to ECR') {
             steps {
                 script {
-                    echo "Tagging and pushing Docker image to ECR..."
-                    def ecrTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                    sh "docker tag ${env.IMAGE_TAG} ${ecrTag}"
-                    sh "docker push ${ecrTag}"
+                    def ecrRepo = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
+                    def buildTag = "${ecrRepo}:${env.BUILD_NUMBER}"
+                    def latestTag = "${ecrRepo}:latest"
 
-                    echo "Updating 'latest' tag in ECR..."
-                    sh "docker tag ${env.IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest"
-                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest"
+                    echo "Tagging and pushing Docker image to ECR..."
+
+                    // Tag and push both build number and latest tags in one go
+                    sh """
+                        docker tag ${env.IMAGE_TAG} ${buildTag}
+                        docker tag ${env.IMAGE_TAG} ${latestTag}
+                        docker push ${buildTag}
+                        docker push ${latestTag}
+                    """
                 }
             }
         }
