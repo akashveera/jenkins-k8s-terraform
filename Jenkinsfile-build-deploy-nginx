@@ -67,6 +67,10 @@ pipeline {
                     def ecrTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
                     sh "docker tag ${env.IMAGE_TAG} ${ecrTag}"
                     sh "docker push ${ecrTag}"
+                    
+                    echo "Updating 'latest' tag in ECR..."
+                    sh "docker tag ${env.IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest"
+                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:latest"
                 }
             }
         }
