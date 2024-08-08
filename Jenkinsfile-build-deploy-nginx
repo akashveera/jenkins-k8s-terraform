@@ -42,8 +42,10 @@ pipeline {
                 script {
                     try {
                         echo "Building Docker image for Nginx web server..."
-                        def imageTag = "build-${env.BUILD_NUMBER}"
-                        dockerImage = docker.build("${IMAGE_NAME}:${imagetag}", "./kubernetes/")
+                        echo "Build Number: ${env.BUILD_NUMBER}"
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        echo "imagetag: ${imageTag}"
+                        dockerImage = docker.build("${imageTag}", "./kubernetes/")
                         env.IMAGE_TAG = imageTag
                     } catch (Exception e) {
                         echo "Error during Docker build process:"
@@ -64,8 +66,11 @@ pipeline {
             steps {
                 script {
                     echo "Tagging and pushing Docker image to ECR..."
-                    sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
-                    sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+                    def ecrTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    sh "docker tag ${env.IMAGE_TAG} ${ecrTag}"
+                    sh "docker push ${ecrTag}"
+                    //sh "docker tag ${IMAGE_NAME}:${IMAGE_TAG} ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
+                    //sh "docker push ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${IMAGE_TAG}"
                 }
             }
         }
