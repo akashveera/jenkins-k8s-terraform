@@ -43,7 +43,7 @@ pipeline {
                     try {
                         echo "Building Docker image for Nginx web server..."
                         def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-                        dockerImage = docker.build("${imageTag}", "./kubernetes/")
+                        docker.build(imageTag, "./kubernetes/")
                         env.IMAGE_TAG = imageTag
                     } catch (Exception e) {
                         echo "Error during Docker build process:"
@@ -64,7 +64,8 @@ pipeline {
             steps {
                 script {
                     echo "Tagging and pushing Docker image to ECR..."
-                    def ecrImage = docker.image("${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}")
+                    def imageTag = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                    def ecrImage = docker.image(imageTag)
                     ecrImage.push()
                     ecrImage.push("latest") // Optionally, tag as latest
 
