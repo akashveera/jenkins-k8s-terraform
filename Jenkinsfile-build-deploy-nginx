@@ -17,6 +17,14 @@ pipeline {
                 }
             }
         }
+        stage('Generate kubeconfig') {
+            steps {
+                script {
+                    echo "Generate kubeconfig..."
+                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                }
+            }
+        }
         stage('Build Docker Image - Initial') {
             steps {
                 script {
@@ -56,7 +64,6 @@ pipeline {
             steps {
                 script {
                     echo "Fetching EKS cluster name and Load Balancer IP..."
-                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
                     
                     def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
                     echo "Cluster Name: ${cluster_name}"

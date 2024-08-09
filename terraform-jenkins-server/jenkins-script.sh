@@ -26,3 +26,14 @@ sudo yum -y install terraform
 sudo curl -LO https://storage.googleapis.com/kubernetes-release/release/v1.23.6/bin/linux/amd64/kubectl
 sudo chmod +x ./kubectl
 sudo mkdir -p $HOME/bin && sudo cp ./kubectl $HOME/bin/kubectl && export PATH=$PATH:$HOME/bin
+
+# Install Docker
+sudo amazon-linux-extras install docker -y
+sudo systemctl start docker
+sudo systemctl enable docker
+
+# Add the Jenkins user to the docker group
+sudo usermod -aG docker jenkins
+
+# Restart Jenkins to ensure Docker group membership is applied
+sudo systemctl restart jenkins
