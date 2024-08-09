@@ -84,7 +84,11 @@ pipeline {
                 script {
                     echo "Updating Kubernetes deployment file with new image tag..."
                     sh """
-                        sed -i 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' kubernetes/nginx-deployment.yaml
+                        sed -i -e 's|AWS_ACCOUNT_ID_PLACEHOLDER|${AWS_ACCOUNT_ID}|' \\
+                            -e 's|AWS_REGION_PLACEHOLDER|${AWS_REGION}|' \\
+                            -e 's|IMAGE_NAME_PLACEHOLDER|${IMAGE_NAME}|' \\
+                            -e 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' \\
+                            kubernetes/nginx-deployment.yaml
                     """
                 }
             }

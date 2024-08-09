@@ -14,7 +14,7 @@ spec:
     spec:
       containers:
       - name: nginx
-        image: 680729924294.dkr.ecr.ap-southeast-2.amazonaws.com/nginx-web-server:IMAGE_TAG_PLACEHOLDER
+        image: AWS_ACCOUNT_ID_PLACEHOLDER.dkr.ecr.AWS_REGION_PLACEHOLDER.amazonaws.com/IMAGE_NAME_PLACEHOLDER:IMAGE_TAG_PLACEHOLDER
         resources:
           requests:
             memory: "64Mi"
