@@ -4,13 +4,13 @@ resource "aws_default_security_group" "default-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"]
+    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"] # provide your IP address 
   }
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"]
+    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"] # provide your IP address 
   }
   egress {
     from_port   = 0
@@ -20,6 +20,6 @@ resource "aws_default_security_group" "default-sg" {
     ipv6_cidr_blocks = ["::/0"]
   }
   tags = {
-    Name = "${var.env_prefix}-default-sg"
+    Name = "${var.env_prefix}-default-jenkins-sg"
   }
 }

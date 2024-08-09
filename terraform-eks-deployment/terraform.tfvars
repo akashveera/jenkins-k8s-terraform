@@ -4,4 +4,4 @@ public_subnet_cidr_blocks=["10.0.4.0/24","10.0.5.0/24","10.0.6.0/24"]
 ecr_name = "nginx-web-server"
 cluster_name = "test-eks"
 cluster_version = "1.30"
-vpc_name = "my-vpc"
+vpc_name = "eks-vpc"
