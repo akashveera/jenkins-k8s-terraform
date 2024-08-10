@@ -1,121 +1,179 @@
 # superloop-technical-assessment
-This is an end-to-end project to deploy a Nginx web server through Jenkins and Kubernetes, using Terraform. What we will build will have this structure:
+This project demonstrates an end-to-end deployment of an Nginx web server using Jenkins, Kubernetes, and Terraform on AWS. The infrastructure will be provisioned with Terraform, and the Nginx web server will be deployed within an EKS cluster managed by Jenkins. The project follows a structured approach, with each step building upon the previous one.
+
 ![alt text](image.png)
 
 ## Project Description
-This repository contains the solution for the Superloop technical assessment. The project demonstrates the implementation of Nginx web server through Jenkins and Kubernetes, using Terraform.
+This repository contains the solution for the Superloop technical assessment. The project demonstrates the implementation of an Nginx web server through Jenkins and Kubernetes, using Terraform.
 
-To do this, we will follow several steps:
+The project is divided into the following steps:
 
-    Create a Jenkins server and install all the dependencies
-    Access and setup the Jenkins server with Github and AWS credentials. 
-    Create Jenkins pipeline and run the Jenkins pipeline to deploy EKS Cluster.
-    Create another Jenkins pipeline to build and deploy Nginx Web Server to the EKS cluster using K8 deployment and service (loadbalancer) 
-    Test the application to make sure it’s running
-    Clean up and destroy all resources
-This project is just one environment deployment, so we will have just a dev environment.
+1. Create a Jenkins server and install all the dependencies.
+2. Access and set up the Jenkins server with GitHub and AWS credentials.
+3. Create a Jenkins pipeline to deploy the EKS Cluster and build and deploy the Nginx web server to the EKS cluster using K8 deployment and service.
+4. Create another Jenkins pipeline to update the index.html with the EKS cluster name and load balancer IP.
+5. Test the application to ensure it is running correctly.
+6. Clean up and destroy all resources.
+
+This project is designed for a single environment deployment, so we will only have a development environment.
 
 ### Project Structure
-1. terraform-jenkins-server -> Terraform code to create Jenkins server and install all dependencies using terraform locally.
-2. terraform-eks-deployment -> Terraform code to create the EKS cluster and ECR using terraform via jenkins pipeline.
-3. kubernetes               -> Contains Dockerfile to create Nginx web server with a custom index.html and yaml files to create deployment and services.
-4. Jenkinsfile              -> Groovy script to create EKS cluster
-5. Jenkinsfile-build-deploy-nginx -> Groovy script to build and deploy Nginx web server to EKS.
-6. Jenkinsfile-destroy      -> Groovy script ti destroy aws terraform resources specifcally the EKS cluster.
+1. terraform-jenkins-server: Terraform code to create the Jenkins server and install all dependencies locally.
+2. terraform-eks-deployment: Terraform code to create the EKS cluster and ECR using Terraform via Jenkins pipeline.
+3. kubernetes: Contains the Dockerfile to create the Nginx web server with a custom index.html and YAML files to create the deployment and services.
+4. Jenkinsfile: Groovy script to create the EKS cluster.
+5. Jenkinsfile-build-deploy-nginx: Groovy script to build and deploy the Nginx web server to the EKS cluster.
+6. Jenkinsfile-destroy: Groovy script to destroy AWS Terraform resources, specifically the EKS cluster.
 
 ## Prerequisites
+Before running this project, make sure you have the following prerequisites:
+
 - AWS Account
-- Git installed in your local computer.
-- Ec2 Key pair for your Jenkins server - use the same name in the key_name section of the jenkins server -> https://github.com/akashveera/superloop-technical-assessment/blob/master/terraform-jenkins-server/server.tf#L17
-- Terraform installed on your local computer. https://k21academy.com/terraform-iac/terraform-installation-overview/
+- Git installed on your local computer.
+- EC2 Key pair for your Jenkins server - use the same name in the key_name section of the Jenkins server.
+- Terraform installed on your local computer.
 - IAM credentials with enough permissions to create resources in AWS and programmatic access keys.
-- AWS credentials that are set up locally with aws configure.
+- AWS credentials set up locally with aws configure.
 
 ## Installation
+To install and set up the project, follow these steps:
+
 1. Clone the repository:
     ```sh
     git clone https://github.com/yourusername/superloop-technical-assessment.git
     ```
+
 2. Navigate to the project directory:
     ```sh
     cd superloop-technical-assessment
     ```
-3. Install dependencies:
+
+3. Install the dependencies:
     ```sh
-    [Provide installation commands, e.g., terraform and AWS cli]
+    [Terraform and AWS CLI]
     ```
 
 ## Running the Project
-1. Navigate to the jenkins project directory:
+This project is divided into four major sections:
+
+### Jenkins Server Creation and Setup
+To create and set up the Jenkins server, follow these steps:
+
+1. Navigate to the Jenkins project directory:
     ```sh
     cd superloop-technical-assessment/terraform-jenkins-server
     ```
-2. Run Terraform commands to deploy the Jenkins server in AWS
+
+2. Make the following changes before running the Terraform commands:
+   - Update the key_name in the server.tf file to your EC2 key pair name.
+   - Update the region in the server.tf file to your preferred region.
+   - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser.
+   - Update the instance_type in the server.tf file to your preferred instance type.
+
+3. Run the Terraform commands to deploy the Jenkins server in AWS:
     ```sh
     terraform init
     terraform validate
     terraform plan
     terraform apply -auto-approve
     ```
+
     Make a note of the public IP address of your Jenkins server, which will be printed in the console.
 
-3. Access and setup the Jenkins server with Github and AWS credentials.
-   1. Paste IP address into your web browser’s address bar, followed by ‘:8080’. The Jenkins server welcome page should show up.
+4. Access and set up the Jenkins server with GitHub and AWS credentials:
+   1. Paste the IP address into your web browser's address bar, followed by ':8080'. The Jenkins server welcome page should appear.
    ![alt text](image-1.png)
-   2. To access to our Jenkins server, we need a password. So we first connect to our EC2 instance through SSH, make sure that your terminal is opened in the same   folder as the key you downloaded before (.pem file) when creating the key pair. So, run the following command to connect to the EC2 instance:
+   2. To access the Jenkins server, you need a password. Connect to your EC2 instance through SSH by running the following command in your terminal:
    ```sh
     ssh -i "path_to_your_key.pem" ec2-user@your_ec2_instance_ip_address
    ```
    3. Once connected, run the following command to get the Jenkins password:
-   ```
+   ```sh
    sudo cat /var/lib/jenkins/secrets/initialAdminPassword
    ```
    ![alt text](image-3.png)
-   4. Copy the password and paste it into the Jenkins server welcome page to access the Jenkins
+   4. Copy the password and paste it into the Jenkins server welcome page to access Jenkins.
    ![alt text](image-4.png)
-   5. Install suggested plugins and create a new user to access Jenkins.
+   5. Install the suggested plugins and create a new user to access Jenkins.
    ![alt text](image-5.png)
    ![alt text](image-6.png)
-   6. Configure Jenkins to connect to your GitHub repository. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials
-   7. In this form you need to select “Username with password” in the kind field and insert your GitHub username and password and give a random ID that can be your username as well.
+   6. Configure Jenkins to connect to your GitHub repository. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials.
+   7. Select "Username with password" in the kind field and insert your GitHub username and password. Give a random ID that can be your username as well.
    ![alt text](image-7.png)
-   8. Then we want to allow Jenkins to access our AWS environment, so we need to add the credentials to our AWS account, in particular the AWS Access Key and AWS Secret Key.
-   9. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials -> select “Secret text”. It will ask you for a Secret and an ID. In ID specify “AWS_ACCESS_KEY_ID” and in Secret paste your AWS Access Key.
+   8. To allow Jenkins to access your AWS environment, add the credentials to your AWS account, specifically the AWS Access Key and AWS Secret Key.
+   9. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials -> select "Secret text". Specify "AWS_ACCESS_KEY_ID" in the ID field and paste your AWS Access Key in the Secret field.
    ![alt text](image-8.png)
-   10. Do the same for the AWS Secret Key, but in ID specify "AWS_SECRET_ACCESS_KEY"
+   10. Repeat the same process for the AWS Secret Key, but specify "AWS_SECRET_ACCESS_KEY" in the ID field.
    ![alt text](image-9.png)
-   11. Now we can configure our Jenkins job to connect to our AWS environment and deploy our EKS cluster.
-   12. Go to Jenkins -> New Item -> select “Pipeline” -> call it "aws-terraform-jenkins-pipeline".
+   11. Now you can configure your Jenkins job to connect to your AWS environment and deploy the EKS cluster.
+
+### Deploy EKS Cluster and Nginx Web Server
+To deploy the EKS cluster and Nginx web server using the Jenkins pipeline, follow these steps:
+
+1. Navigate to Jenkins -> New Item -> select "Pipeline" -> name it "aws-terraform-jenkins-pipeline".
    ![alt text](image-10.png)
-   13. Click OK and then scroll to the bottom of the page and under Pipeline select “Pipeline script from SCM” and as SCM choose “Git” and then you want to give your GitHub Repository URL and select the credentials we defined before.
+
+2. Click OK and then scroll to the bottom of the page. Under Pipeline, select "Pipeline script from SCM" and choose "Git". Provide your GitHub Repository URL and select the credentials defined earlier.
    ![alt text](image-11.png)
-   14. Select you branch and write the "Jenkinsfile" in script path field, click save.
+
+3. Select your branch and write "Jenkinsfile" in the script path field. Click save.
    ![alt text](image-12.png)
-   15. Before clicking Build Now, need to install ansicolor plugin in our jenkins server. Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor -> select -> install. 
+
+4. Before clicking "Build Now", install the AnsiColor plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor -> select -> install.
    ![alt text](image-13.png)
-   16. Now we can run our Jenkins job to deploy our EKS cluster. Click on "Build Now" on the jenkins pipeline
+
+5. Run the Jenkins job to deploy the EKS cluster. Click on "Build Now" on the Jenkins pipeline.
    ![alt text](image-14.png)
-   Jenkins will take about 10–15 minutes to create the EKS cluster.
+
+   Jenkins will take about 10-15 minutes to create the EKS cluster.
    ![alt text](image-15.png)
-   17. Once the job is complete, you can verify that the EKS cluster has been created successfully.
+
+6. Once the job is complete, you can verify that the EKS cluster has been created successfully and the Nginx web server has been created with the LoadBalancer IP outputted in the pipeline.
    ![alt text](image-18.png)
    ![alt text](image-19.png)
+   ![alt text](image-21.png)
 
+### Update Nginx Web Page
+To update the Nginx web page to output the EKS cluster name and LoadBalancer IP, follow these steps:
 
-4. Create new Jenkins pipeline to build and deploy Nginx Web Server to the EKS cluster using K8 deployment and service of type loadbalancer.
-    1. Go to Jenkins -> New Item -> select “Pipeline” -> call it "build-deploy-nginx-server" -> Click OK
-    ![alt text](image-16.png)
-    2. Scroll to the bottom of the page and under Pipeline select “Pipeline script from SCM" and as SCM choose “Git” and then you want to give your GitHub Repository URL and select the credentials we defined before.
-    ![alt text](image-11.png)
-    3. Select you branch and write "Jenkinsfile-build-deploy-nginx" in script path field, click save.
-    ![alt text](image-17.png)
-    4. Before clicking Build Now, need to install docker plugin in our jenkins server. Manage Jenkins -> Plugins -> Available plugins -> Search for docker -> select Docker and Docker Pipeline -> Click Install
-    ![alt text](image-20.png)
-    5. Now we can run our Jenkins job to build and deploy Nginx Web Server. Click "Build Now"
-   
+1. Navigate to Jenkins -> New Item -> select "Pipeline" -> name it "build-deploy-nginx-server" -> Click OK.
+   ![alt text](image-16.png)
 
-## Additional Information
-- [Any additional notes or information about the project]
+2. Scroll to the bottom of the page and under Pipeline, select "Pipeline script from SCM". Choose "Git" and provide your GitHub Repository URL. Select the credentials defined earlier.
+   ![alt text](image-11.png)
+
+3. Select your branch and write "Jenkinsfile-build-deploy-nginx" in the script path field. Click save.
+   ![alt text](image-17.png)
+
+4. Before clicking "Build Now", install the Docker plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for Docker -> select Docker and Docker Pipeline -> Click Install.
+   ![alt text](image-20.png)
+
+5. Run the Jenkins job to deploy the updated Nginx web page. Click on "Build Now".
+
+6. The pipeline will output the LoadBalancer IP, which you can access in your web browser to view the updated web page.
+
+### Clean Up and Destroy Resources
+To clean up and destroy all resources, follow these steps:
+
+1. Navigate to Jenkins -> New Item -> select "Pipeline" -> name it "destroy-resources" -> Click OK.
+   ![alt text](image-22.png)
+
+2. Scroll to the bottom of the page and under Pipeline, select "Pipeline script from SCM". Choose "Git" and provide your GitHub Repository URL. Select the credentials defined earlier.
+
+3. Select your branch and write "Jenkinsfile-destroy" in the script path field. Click save.
+
+4. Click "Build Now" to destroy the Kubernetes deployment and service, as well as the EKS cluster.
+
+5. To delete the Jenkins Server, navigate to the Jenkins project directory:
+    ```sh
+    cd superloop-technical-assessment/terraform-jenkins-server
+    ```
+
+6. Run the Terraform commands to destroy the Jenkins server in AWS:
+    ```sh
+    terraform init
+    terraform destroy -auto-approve
+    ```
 
 ## License
-This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+This project is created by Akash Veerabomma.

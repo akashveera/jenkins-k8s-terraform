@@ -103,6 +103,21 @@ pipeline {
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."
                                 sh "kubectl apply -f nginx-service.yaml"
+                                
+                                echo "Waiting for Load Balancer IP to be assigned..."
+                                // Wait and retrieve the Load Balancer IP
+                                retry(10) {
+                                    sleep(time: 30, unit: 'SECONDS') // Wait for 30 seconds between retries
+                                    def lbIp = sh(
+                                        script: "kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'",
+                                        returnStdout: true
+                                    ).trim()
+                                    if (lbIp) {
+                                        echo "Nginx Load Balancer IP: http://${lbIp}"
+                                    } else {
+                                        error "Load Balancer IP not assigned yet. Retrying..."
+                                    }
+                                }
                             } catch (Exception e) {
                                 echo "Error: Kubernetes deployment failed. Please check the logs for details."
                                 error "Stopping pipeline due to Kubernetes error."

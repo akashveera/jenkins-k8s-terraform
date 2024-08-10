@@ -1,4 +1,3 @@
-#!/usr/bin/env groovy
 pipeline {
     agent any
     environment {
@@ -10,7 +9,36 @@ pipeline {
         timestamps()
     }
     stages {
-        stage("Destroy terraform resources") {
+        stage("Delete Kubernetes Deployment and Service") {
+            steps {
+                script {
+                    ansiColor('xterm') {
+                        dir('kubernetes') {
+                            try {
+                                echo "Deleting Kubernetes Nginx deployment..."
+                                sh "kubectl delete -f nginx-deployment.yaml || true"
+                                echo "Deleting Kubernetes Nginx service..."
+                                sh "kubectl delete -f nginx-service.yaml || true"
+                            } catch (Exception e) {
+                                echo "Error: Kubernetes resource deletion failed. Please check the logs for details."
+                                error "Stopping pipeline due to Kubernetes error."
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("Wait Before Destroying Kubernetes Resources, specifically load Balancer") {
+            steps {
+                script {
+                    echo "Waiting for resources to be deleted..."
+                    sleep(time: 60, unit: 'SECONDS') // Wait for 60 seconds before moving to the next stage
+                }
+            }
+        }
+        
+        stage("Destroy Terraform Resources") {
             steps {
                 script {
                     ansiColor('xterm') {
