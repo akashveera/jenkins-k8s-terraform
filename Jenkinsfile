@@ -41,7 +41,7 @@ pipeline {
                         retry(10) {
                             sleep(time: 60, unit: 'SECONDS')
                             def clusterStatus = sh(
-                                script: "aws eks describe-cluster --name my-eks-cluster --region ${AWS_DEFAULT_REGION} --query 'cluster.status' --output text",
+                                script: "aws eks describe-cluster --name test-eks --region ${AWS_DEFAULT_REGION} --query 'cluster.status' --output text",
                                 returnStdout: true
                             ).trim()
                             if (clusterStatus != 'ACTIVE') {
