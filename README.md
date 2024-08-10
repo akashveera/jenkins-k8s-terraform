@@ -83,28 +83,38 @@ To create and set up the Jenkins server, follow these steps:
 4. Access and set up the Jenkins server with GitHub and AWS credentials:
    1. Paste the IP address into your web browser's address bar, followed by ':8080'. The Jenkins server welcome page should appear.
    ![alt text](image-1.png)
+
    2. To access the Jenkins server, you need a password. Connect to your EC2 instance through SSH by running the following command in your terminal:
    ```sh
     ssh -i "path_to_your_key.pem" ec2-user@your_ec2_instance_ip_address
    ```
+
    3. Once connected, run the following command to get the Jenkins password:
    ```sh
    sudo cat /var/lib/jenkins/secrets/initialAdminPassword
    ```
    ![alt text](image-3.png)
+
    4. Copy the password and paste it into the Jenkins server welcome page to access Jenkins.
    ![alt text](image-4.png)
+
    5. Install the suggested plugins and create a new user to access Jenkins.
    ![alt text](image-5.png)
    ![alt text](image-6.png)
+
    6. Configure Jenkins to connect to your GitHub repository. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials.
+
    7. Select "Username with password" in the kind field and insert your GitHub username and password. Give a random ID that can be your username as well.
    ![alt text](image-7.png)
+
    8. To allow Jenkins to access your AWS environment, add the credentials to your AWS account, specifically the AWS Access Key and AWS Secret Key.
+
    9. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials -> select "Secret text". Specify "AWS_ACCESS_KEY_ID" in the ID field and paste your AWS Access Key in the Secret field.
    ![alt text](image-8.png)
+
    10. Repeat the same process for the AWS Secret Key, but specify "AWS_SECRET_ACCESS_KEY" in the ID field.
    ![alt text](image-9.png)
+   
    11. Now you can configure your Jenkins job to connect to your AWS environment and deploy the EKS cluster.
 
 ### Deploy EKS Cluster and Nginx Web Server
