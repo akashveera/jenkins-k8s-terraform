@@ -66,7 +66,8 @@ pipeline {
                 script {
                     try {
                         echo "Building Docker image for Nginx web server..."
-                        docker.build("${IMAGE_NAME}", "./kubernetes/")
+                        def imageTag = "${IMAGE_NAME}:latest"
+                        docker.build(imageTag, "./kubernetes/")
                     } catch (Exception e) {
                         echo "Error during Docker build process:"
                         throw e
