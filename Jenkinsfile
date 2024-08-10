@@ -38,7 +38,7 @@ pipeline {
                 script {
                     ansiColor('xterm') {
                         echo "Waiting for EKS cluster to be ready..."
-                        retry(10) {
+                        retry(20) {
                             sleep(time: 60, unit: 'SECONDS')
                             def clusterStatus = sh(
                                 script: "aws eks describe-cluster --name test-eks --region ${AWS_DEFAULT_REGION} --query 'cluster.status' --output text",
