@@ -5,11 +5,14 @@ pipeline {
         AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
         AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
         AWS_DEFAULT_REGION = "ap-southeast-2"
+        AWS_ACCOUNT_ID = '680729924294'
+        IMAGE_NAME = "nginx-web-server"
     }
     options {
         timestamps()
     }
     stages {
+        /*
         stage("Create an EKS Cluster") {
             steps {
                 script {
@@ -53,6 +56,7 @@ pipeline {
                 }
             }
         }
+        */
         stage('Checkout') {
             steps {
                 script {
@@ -105,7 +109,7 @@ pipeline {
                         sed -i -e 's|AWS_ACCOUNT_ID_PLACEHOLDER|${AWS_ACCOUNT_ID}|' \\
                             -e 's|AWS_REGION_PLACEHOLDER|${AWS_DEFAULT_REGION}|' \\
                             -e 's|IMAGE_NAME_PLACEHOLDER|${IMAGE_NAME}|' \\
-                            -e 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' \\
+                            -e 's|IMAGE_TAG_PLACEHOLDER|latest|' \\
                             kubernetes/nginx-deployment.yaml
                     """
                 }
