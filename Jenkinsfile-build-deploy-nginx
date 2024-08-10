@@ -17,46 +17,78 @@ pipeline {
                 }
             }
         }
-        stage('Generate kubeconfig') {
+        stage('Build Docker Image') {
             steps {
                 script {
-                    echo "Generate kubeconfig..."
-                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                    try {
+                        echo "Building Docker image for Nginx web server..."
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        docker.build(imageTag, "./kubernetes/")
+                        env.IMAGE_TAG = imageTag
+                    } catch (Exception e) {
+                        echo "Error during Docker build process:"
+                        throw e // Re-throw the exception to fail the build
+                    }
                 }
             }
         }
-        stage('Build Docker Image - Initial') {
+        stage('Login to AWS ECR') {
             steps {
                 script {
-                    buildDockerImage()
+                    echo "Logging in to AWS ECR..."
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
                 }
             }
         }
-        stage('Login to AWS ECR - Initial') {
+        stage('Push Docker Image to ECR') {
             steps {
                 script {
-                    loginToECR()
+                    def ecrRepo = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
+                    def buildTag = "${ecrRepo}:${env.BUILD_NUMBER}"
+                    def latestTag = "${ecrRepo}:latest"
+
+                    echo "Tagging and pushing Docker image to ECR..."
+
+                    // Tag and push both build number and latest tags in one go
+                    sh """
+                        docker tag ${env.IMAGE_TAG} ${buildTag}
+                        docker tag ${env.IMAGE_TAG} ${latestTag}
+                        docker push ${buildTag}
+                        docker push ${latestTag}
+                    """
                 }
             }
         }
-        stage('Push Docker Image to ECR - Initial') {
+        stage('Update Deployment File') {
             steps {
                 script {
-                    pushDockerImageToECR()
+                    echo "Updating Kubernetes deployment file with new image tag..."
+                    sh """
+                        sed -i -e 's|AWS_ACCOUNT_ID_PLACEHOLDER|${AWS_ACCOUNT_ID}|' \\
+                            -e 's|AWS_REGION_PLACEHOLDER|${AWS_REGION}|' \\
+                            -e 's|IMAGE_NAME_PLACEHOLDER|${IMAGE_NAME}|' \\
+                            -e 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' \\
+                            kubernetes/nginx-deployment.yaml
+                    """
                 }
             }
         }
-        stage('Update Deployment File - Initial') {
+        stage('Deploy to EKS') {
             steps {
                 script {
-                    updateDeploymentFile()
-                }
-            }
-        }
-        stage('Deploy to EKS - Initial') {
-            steps {
-                script {
-                    deployToEKS()
+                    ansiColor('xterm') {
+                        dir('kubernetes') {
+                            try {
+                                echo "Applying Kubernetes deployment for Nginx..."
+                                sh "kubectl apply -f nginx-deployment.yaml"
+                                echo "Applying Kubernetes service for Nginx..."
+                                sh "kubectl apply -f nginx-service.yaml"
+                            } catch (Exception e) {
+                                echo "Error: Kubernetes deployment failed. Please check the logs for details."
+                                error "Stopping pipeline due to Kubernetes error."
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -64,6 +96,7 @@ pipeline {
             steps {
                 script {
                     echo "Fetching EKS cluster name and Load Balancer IP..."
+                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
                     
                     def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
                     echo "Cluster Name: ${cluster_name}"
@@ -79,106 +112,12 @@ pipeline {
                 }
             }
         }
-        stage('Build Docker Image - Post Update') {
-            steps {
-                script {
-                    buildDockerImage()
-                }
-            }
-        }
-        stage('Login to AWS ECR - Post Update') {
-            steps {
-                script {
-                    loginToECR()
-                }
-            }
-        }
-        stage('Push Docker Image to ECR - Post Update') {
-            steps {
-                script {
-                    pushDockerImageToECR()
-                }
-            }
-        }
-        stage('Update Deployment File - Post Update') {
-            steps {
-                script {
-                    updateDeploymentFile()
-                }
-            }
-        }
-        stage('Deploy to EKS - Post Update') {
-            steps {
-                script {
-                    deployToEKS()
-                }
-            }
-        }
     }
     post {
         always {
             script {
                 echo "Cleaning up workspace..."
                 cleanWs()
-            }
-        }
-    }
-}
-
-def buildDockerImage() {
-    try {
-        echo "Building Docker image for Nginx web server..."
-        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
-        docker.build(imageTag, "./kubernetes/")
-        env.IMAGE_TAG = imageTag
-    } catch (Exception e) {
-        echo "Error during Docker build process:"
-        throw e // Re-throw the exception to fail the build
-    }
-}
-
-def loginToECR() {
-    echo "Logging in to AWS ECR..."
-    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
-}
-
-def pushDockerImageToECR() {
-    def ecrRepo = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
-    def buildTag = "${ecrRepo}:${env.BUILD_NUMBER}"
-    def latestTag = "${ecrRepo}:latest"
-
-    echo "Tagging and pushing Docker image to ECR..."
-
-    sh """
-        docker tag ${env.IMAGE_TAG} ${buildTag}
-        docker tag ${env.IMAGE_TAG} ${latestTag}
-        docker push ${buildTag}
-        docker push ${latestTag}
-    """
-}
-
-def updateDeploymentFile() {
-    echo "Updating Kubernetes deployment file with new image tag..."
-    sh """
-        sed -i -e 's|AWS_ACCOUNT_ID_PLACEHOLDER|${AWS_ACCOUNT_ID}|' \\
-            -e 's|AWS_REGION_PLACEHOLDER|${AWS_REGION}|' \\
-            -e 's|IMAGE_NAME_PLACEHOLDER|${IMAGE_NAME}|' \\
-            -e 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' \\
-            kubernetes/nginx-deployment.yaml
-    """
-}
-
-def deployToEKS() {
-    ansiColor('xterm') {
-        dir('kubernetes') {
-            try {
-                echo "Applying Kubernetes deployment for Nginx..."
-                sh "kubectl apply -f nginx-deployment.yaml"
-                echo "Applying Kubernetes service for Nginx..."
-                sh "kubectl apply -f nginx-service.yaml"
-            } catch (Exception e) {
-                echo "Error: Kubernetes deployment failed. Please check the logs for details."
-                error "Stopping pipeline due to Kubernetes error."
             }
         }
     }
