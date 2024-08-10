@@ -12,7 +12,6 @@ pipeline {
         timestamps()
     }
     stages {
-        /*
         stage("Create an EKS Cluster") {
             steps {
                 script {
@@ -56,7 +55,6 @@ pipeline {
                 }
             }
         }
-        */
         stage('Checkout') {
             steps {
                 script {
