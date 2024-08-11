@@ -130,7 +130,7 @@ To deploy the EKS cluster and Nginx web server using the Jenkins pipeline, follo
 3. Select your branch "main" and write "Jenkinsfile" in the script path field. Click save.
    ![alt text](image-12.png)
 
-4. Before clicking "Build Now", install the AnsiColor plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor -> select -> install.
+4. Before clicking "Build Now", install the AnsiColor plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor and Docker -> select Ansicolor, Docker and Docker Pipeline -> Click Install.
    ![alt text](image-13.png)
 
 5. Run the Jenkins job to deploy the EKS cluster. Click on "Build Now" on the Jenkins pipeline.
@@ -156,12 +156,9 @@ To update the Nginx web page to output the EKS cluster name and LoadBalancer IP,
 3. Select your branch and write "Jenkinsfile-build-deploy-nginx" in the script path field. Click save.
    ![alt text](image-17.png)
 
-4. Before clicking "Build Now", install the Docker plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for Docker -> select Docker and Docker Pipeline -> Click Install.
-   ![alt text](image-20.png)
+4. Run the Jenkins job to deploy the updated Nginx web page. Click on "Build Now".
 
-5. Run the Jenkins job to deploy the updated Nginx web page. Click on "Build Now".
-
-6. The pipeline will output the LoadBalancer IP, which you can access in your web browser to view the updated web page.
+5. The pipeline will output the LoadBalancer IP, which you can access in your web browser to view the updated web page.
 
 ### Clean Up and Destroy Resources
 To clean up and destroy all resources, follow these steps:
