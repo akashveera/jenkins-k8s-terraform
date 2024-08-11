@@ -121,7 +121,7 @@ pipeline {
                         dir('kubernetes') {
                             try {
                                 echo "Fetching EKS cluster name and Load Balancer IP..."
-                                sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                                sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_DEFAULT_REGION}"
                                 echo "Applying Kubernetes deployment for Nginx..."
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."

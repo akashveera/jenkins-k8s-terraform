@@ -35,6 +35,7 @@ Before running this project, make sure you have the following prerequisites:
 - IAM credentials with enough permissions to create resources in AWS and programmatic access keys.
 - AWS credentials set up locally with aws configure.
 - Create S3 bucket to store the Terraform state file.
+- Create a new git repository, So Jenkins need to access to this code to do the deployment for us.
 
 ## Installation
 To install and set up the project, follow these steps:
@@ -48,11 +49,8 @@ To install and set up the project, follow these steps:
     ```sh
     cd superloop-technical-assessment
     ```
-
-3. Install the dependencies:
-    ```sh
-    [Terraform and AWS CLI]
-    ```
+3. Create a new GitHub repository and name it “my-jenkins-pipeline” or call it whatever you want. Leave it public and do not add a README.md file.
+   Then pull down the repository with “git clone” and move all the  files and folder to the cloning folder:
 
 ## Running the Project
 This project is divided into four major sections:
@@ -70,6 +68,7 @@ To create and set up the Jenkins server, follow these steps:
    - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser. Note: use your laptop public IP address. 
    - Update the instance_type in the terraform.tfvars file to your preferred instance type.
    - Update the s3 bucket name that you created earlier in the backend.tf file.
+   - update aws account 
 
 3. Run the Terraform commands to deploy the Jenkins server in AWS:
     ```sh
