@@ -1,0 +1,139 @@
+pipeline {
+    agent any
+    environment {
+        AWS_ACCESS_KEY_ID = credentials('AWS_ACCESS_KEY_ID')
+        AWS_SECRET_ACCESS_KEY = credentials('AWS_SECRET_ACCESS_KEY')
+        AWS_REGION = 'ap-southeast-2'
+        AWS_ACCOUNT_ID = '680729924294'
+        IMAGE_NAME = "nginx-web-server"
+        EKS_CLUSTER_NAME = "test-eks"
+    }
+    stages {
+        stage('Checkout') {
+            steps {
+                script {
+                    echo "Checking out the code from SCM..."
+                    checkout scm
+                }
+            }
+        }
+        stage('Update index.html') {
+            steps {
+                script {
+                    echo "Fetching EKS cluster name and Load Balancer IP..."
+                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
+                    
+                    def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
+                    echo "Cluster Name: ${cluster_name}"
+                    
+                    def load_balancer_ip = sh(script: "kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'", returnStdout: true).trim()
+                    echo "Load Balancer IP: ${load_balancer_ip}"
+                    
+                    echo "Updating index.html with Cluster Name and Load Balancer IP..."
+                    sh """
+                        sed -i 's/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/' kubernetes/index.html
+                        sed -i 's/LOAD_BALANCER_IP_PLACEHOLDER/${load_balancer_ip}/' kubernetes/index.html
+                    """
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    try {
+                        echo "Building Docker image for Nginx web server..."
+                        def imageTag = "${IMAGE_NAME}:${env.BUILD_NUMBER}"
+                        docker.build(imageTag, "./kubernetes/")
+                        env.IMAGE_TAG = imageTag
+                    } catch (Exception e) {
+                        echo "Error during Docker build process:"
+                        throw e // Re-throw the exception to fail the build
+                    }
+                }
+            }
+        }
+        stage('Login to AWS ECR') {
+            steps {
+                script {
+                    echo "Logging in to AWS ECR..."
+                    sh "aws ecr get-login-password --region ${AWS_REGION} | docker login --username AWS --password-stdin ${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com"
+                }
+            }
+        }
+        stage('Push Docker Image to ECR') {
+            steps {
+                script {
+                    def ecrRepo = "${AWS_ACCOUNT_ID}.dkr.ecr.${AWS_REGION}.amazonaws.com/${IMAGE_NAME}"
+                    def buildTag = "${ecrRepo}:${env.BUILD_NUMBER}"
+                    def latestTag = "${ecrRepo}:latest"
+
+                    echo "Tagging and pushing Docker image to ECR..."
+
+                    // Tag and push both build number and latest tags in one go
+                    sh """
+                        docker tag ${env.IMAGE_TAG} ${buildTag}
+                        docker tag ${env.IMAGE_TAG} ${latestTag}
+                        docker push ${buildTag}
+                        docker push ${latestTag}
+                    """
+                }
+            }
+        }
+        stage('Update Deployment File') {
+            steps {
+                script {
+                    echo "Updating Kubernetes deployment file with new image tag..."
+                    sh """
+                        sed -i -e 's|AWS_ACCOUNT_ID_PLACEHOLDER|${AWS_ACCOUNT_ID}|' \\
+                            -e 's|AWS_REGION_PLACEHOLDER|${AWS_REGION}|' \\
+                            -e 's|IMAGE_NAME_PLACEHOLDER|${IMAGE_NAME}|' \\
+                            -e 's|IMAGE_TAG_PLACEHOLDER|${env.BUILD_NUMBER}|' \\
+                            kubernetes/nginx-deployment.yaml
+                    """
+                }
+            }
+        }
+        stage('Deploy to EKS') {
+            steps {
+                script {
+                    ansiColor('xterm') {
+                        dir('kubernetes') {
+                            try {
+                                echo "Applying Kubernetes deployment for Nginx..."
+                                sh "kubectl apply -f nginx-deployment.yaml"
+                                echo "Applying Kubernetes service for Nginx..."
+                                sh "kubectl apply -f nginx-service.yaml"
+                                
+                                echo "Waiting for Load Balancer IP to be assigned..."
+                                // Wait and retrieve the Load Balancer IP
+                                retry(10) {
+                                    sleep(time: 30, unit: 'SECONDS') // Wait for 30 seconds between retries
+                                    def lbIp = sh(
+                                        script: "kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'",
+                                        returnStdout: true
+                                    ).trim()
+                                    if (lbIp) {
+                                        echo "Nginx Load Balancer IP: http://${lbIp}"
+                                    } else {
+                                        error "Load Balancer IP not assigned yet. Retrying..."
+                                    }
+                                }
+                            } catch (Exception e) {
+                                echo "Error: Kubernetes deployment failed. Please check the logs for details."
+                                error "Stopping pipeline due to Kubernetes error."
+                            }
+                        }
+                    }
+                }
+            }
+        }
+    }
+    post {
+        always {
+            script {
+                echo "Cleaning up workspace..."
+                cleanWs()
+            }
+        }
+    }
+}
