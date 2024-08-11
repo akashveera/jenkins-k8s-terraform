@@ -109,7 +109,7 @@ pipeline {
                                 retry(10) {
                                     sleep(time: 30, unit: 'SECONDS') // Wait for 30 seconds between retries
                                     def lbIp = sh(
-                                        script: "kubectl get svc nginx-service -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'",
+                                        script: "kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'",
                                         returnStdout: true
                                     ).trim()
                                     if (lbIp) {
