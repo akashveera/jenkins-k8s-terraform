@@ -7,6 +7,7 @@ pipeline {
         AWS_DEFAULT_REGION = "ap-southeast-2"
         AWS_ACCOUNT_ID = '298708626827'
         IMAGE_NAME = "nginx-web-server"
+        EKS_CLUSTER_NAME = "test-eks"
     }
     options {
         timestamps()
@@ -119,6 +120,8 @@ pipeline {
                     ansiColor('xterm') {
                         dir('kubernetes') {
                             try {
+                                echo "Fetching EKS cluster name and Load Balancer IP..."
+                                sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
                                 echo "Applying Kubernetes deployment for Nginx..."
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."
