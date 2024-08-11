@@ -50,7 +50,7 @@ To install and set up the project, follow these steps:
     cd superloop-technical-assessment
     ```
 3. Create a new GitHub repository and name it “my-jenkins-pipeline” or call it whatever you want. Leave it public and do not add a README.md file.
-   Then pull down the repository with “git clone” and move all the  files and folder to the cloning folder:
+   Then pull down the repository with “git clone” and move all the  files and folder to the new repo. 
 
 ## Running the Project
 This project is divided into four major sections:
