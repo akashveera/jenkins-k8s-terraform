@@ -50,7 +50,7 @@ To install and set up the project, follow these steps:
     cd superloop-technical-assessment
     ```
 3. Create a new GitHub repository and name it “my-jenkins-pipeline” or call it whatever you want. Leave it public and do not add a README.md file.
-   Then pull down the repository with “git clone” and move all the  files and folder to the new repo. 
+   Then pull down the repository with “git clone” and move all the files and folder to the new repo. 
 
 ## Running the Project
 This project is divided into four major sections:
@@ -68,7 +68,7 @@ To create and set up the Jenkins server, follow these steps:
    - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser. Note: use your laptop public IP address. 
    - Update the instance_type in the terraform.tfvars file to your preferred instance type.
    - Update the s3 bucket name that you created earlier in the backend.tf file.
-   - update aws account 
+   - update aws principal_arn in the eks.tf file to your Iam user that you created earlier. So that iam user has access to the eks cluster. 
 
 3. Run the Terraform commands to deploy the Jenkins server in AWS:
     ```sh
