@@ -34,6 +34,7 @@ Before running this project, make sure you have the following prerequisites:
 - Terraform installed on your local computer.
 - IAM credentials with enough permissions to create resources in AWS and programmatic access keys.
 - AWS credentials set up locally with aws configure.
+- Create S3 bucket to store the Terraform state file.
 
 ## Installation
 To install and set up the project, follow these steps:
@@ -66,9 +67,9 @@ To create and set up the Jenkins server, follow these steps:
 
 2. Make the following changes before running the Terraform commands:
    - Update the key_name in the server.tf file to your EC2 key pair name.
-   - Update the region in the server.tf file to your preferred region.
-   - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser.
-   - Update the instance_type in the server.tf file to your preferred instance type.
+   - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser. Note: use your laptop public IP address. 
+   - Update the instance_type in the terraform.tfvars file to your preferred instance type.
+   - Update the s3 bucket name that you created earlier in the backend.tf file.
 
 3. Run the Terraform commands to deploy the Jenkins server in AWS:
     ```sh
@@ -102,7 +103,7 @@ To create and set up the Jenkins server, follow these steps:
    ![alt text](image-5.png)
    ![alt text](image-6.png)
 
-   6. Configure Jenkins to connect to your GitHub repository. Go to Manage Jenkins -> Manage Credentials -> Click on Global -> Add Credentials.
+   6. Configure Jenkins to connect to your GitHub repository. Go to Manage Jenkins -> Configure Credentials -> Click on Global -> Add Credentials.
 
    7. Select "Username with password" in the kind field and insert your GitHub username and password. Give a random ID that can be your username as well.
    ![alt text](image-7.png)
@@ -114,7 +115,7 @@ To create and set up the Jenkins server, follow these steps:
 
    10. Repeat the same process for the AWS Secret Key, but specify "AWS_SECRET_ACCESS_KEY" in the ID field.
    ![alt text](image-9.png)
-   
+
    11. Now you can configure your Jenkins job to connect to your AWS environment and deploy the EKS cluster.
 
 ### Deploy EKS Cluster and Nginx Web Server
@@ -126,7 +127,7 @@ To deploy the EKS cluster and Nginx web server using the Jenkins pipeline, follo
 2. Click OK and then scroll to the bottom of the page. Under Pipeline, select "Pipeline script from SCM" and choose "Git". Provide your GitHub Repository URL and select the credentials defined earlier.
    ![alt text](image-11.png)
 
-3. Select your branch and write "Jenkinsfile" in the script path field. Click save.
+3. Select your branch "main" and write "Jenkinsfile" in the script path field. Click save.
    ![alt text](image-12.png)
 
 4. Before clicking "Build Now", install the AnsiColor plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor -> select -> install.
