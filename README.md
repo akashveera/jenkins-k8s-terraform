@@ -3,6 +3,14 @@ This project demonstrates an end-to-end deployment of an Nginx web server using 
 
 ![alt text](image.png)
 
+## Technologies Used
+- **Jenkins**: For continuous integration and deployment.
+- **Kubernetes (EKS)**: For container orchestration.
+- **Terraform**: For infrastructure as code.
+- **AWS**: For cloud infrastructure.
+- **Docker**: For containerizing the Nginx web server.
+- **GitHub**: For version control and repository management.
+
 ## Project Description
 This repository contains the solution for the Superloop technical assessment. The project demonstrates the implementation of an Nginx web server through Jenkins and Kubernetes, using Terraform.
 
