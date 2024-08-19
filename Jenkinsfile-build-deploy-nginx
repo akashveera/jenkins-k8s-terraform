@@ -17,26 +17,6 @@ pipeline {
                 }
             }
         }
-        stage('Update index.html') {
-            steps {
-                script {
-                    echo "Fetching EKS cluster name and Load Balancer IP..."
-                    sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
-                    
-                    def cluster_name = sh(script: "aws eks describe-cluster --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION} --query 'cluster.name' --output text", returnStdout: true).trim()
-                    echo "Cluster Name: ${cluster_name}"
-                    
-                    def load_balancer_ip = sh(script: "kubectl get svc nginx -o jsonpath='{.status.loadBalancer.ingress[0].hostname}'", returnStdout: true).trim()
-                    echo "Load Balancer IP: ${load_balancer_ip}"
-                    
-                    echo "Updating index.html with Cluster Name and Load Balancer IP..."
-                    sh """
-                        sed -i 's/CLUSTER_NAME_PLACEHOLDER/${cluster_name}/' kubernetes/index.html
-                        sed -i 's/LOAD_BALANCER_IP_PLACEHOLDER/${load_balancer_ip}/' kubernetes/index.html
-                    """
-                }
-            }
-        }
         stage('Build Docker Image') {
             steps {
                 script {
@@ -99,6 +79,8 @@ pipeline {
                     ansiColor('xterm') {
                         dir('kubernetes') {
                             try {
+                                echo "Updating kubeconfig for EKS cluster ${EKS_CLUSTER_NAME} in region ${AWS_REGION}... "
+                                sh "aws eks update-kubeconfig --name ${EKS_CLUSTER_NAME} --region ${AWS_REGION}"
                                 echo "Applying Kubernetes deployment for Nginx..."
                                 sh "kubectl apply -f nginx-deployment.yaml"
                                 echo "Applying Kubernetes service for Nginx..."
