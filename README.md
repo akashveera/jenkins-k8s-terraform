@@ -1,4 +1,4 @@
-# superloop-technical-assessment
+# jenkins-k8s-terraform
 This project demonstrates an end-to-end deployment of an Nginx web server using Jenkins, Kubernetes, and Terraform on AWS. The infrastructure will be provisioned with Terraform, and the Nginx web server will be deployed within an EKS cluster managed by Jenkins. The project follows a structured approach, with each step building upon the previous one.
 
 ![alt text](image.png)
@@ -12,7 +12,7 @@ This project demonstrates an end-to-end deployment of an Nginx web server using 
 - **GitHub**: For version control and repository management.
 
 ## Project Description
-This repository contains the solution for the Superloop technical assessment. The project demonstrates the implementation of an Nginx web server through Jenkins and Kubernetes, using Terraform.
+This repository contains the solution to deploy an Nginx web server into an EKS cluster using Jenkins and Terraform.
 
 The project is divided into the following steps:
 
@@ -26,12 +26,12 @@ The project is divided into the following steps:
 This project is designed for a single environment deployment, so we will only have a development environment.
 
 ### Project Structure
-1. terraform-jenkins-server: Terraform code to create the Jenkins server and install all dependencies locally.
-2. terraform-eks-deployment: Terraform code to create the EKS cluster and ECR using Terraform via Jenkins pipeline.
-3. kubernetes: Contains the Dockerfile to create the Nginx web server with a custom index.html and YAML files to create the deployment and services.
-4. Jenkinsfile: Groovy script to create the EKS cluster.
-5. Jenkinsfile-build-deploy-nginx: Groovy script to build and deploy the Nginx web server to the EKS cluster.
-6. Jenkinsfile-destroy: Groovy script to destroy AWS Terraform resources, specifically the EKS cluster.
+1. **terraform-jenkins-server**: Terraform code to create the Jenkins server and install all dependencies locally.
+2. **terraform-eks-deployment**: Terraform code to create the EKS cluster and ECR using Terraform via Jenkins pipeline.
+3. **kubernetes**: Contains the Dockerfile to create the Nginx web server with a custom `index.html` and YAML files to create the deployment and services.
+4. **Jenkinsfile**: Groovy script to create the EKS cluster.
+5. **Jenkinsfile-build-deploy-nginx**: Groovy script to build and deploy the Nginx web server to the EKS cluster.
+6. **Jenkinsfile-destroy**: Groovy script to destroy AWS Terraform resources, specifically the EKS cluster.
 
 ## Prerequisites
 Before running this project, make sure you have the following prerequisites:
@@ -50,12 +50,12 @@ To install and set up the project, follow these steps:
 
 1. Clone the repository:
     ```sh
-    git clone https://github.com/yourusername/superloop-technical-assessment.git
+    git clone https://github.com/akashveera/jenkins-k8s-terraform.git
     ```
 
 2. Navigate to the project directory:
     ```sh
-    cd superloop-technical-assessment
+    cd jenkins-k8s-terraform
     ```
 3. Create a new GitHub repository and name it “my-jenkins-pipeline” or call it whatever you want. Leave it public and do not add a README.md file.
    Then pull down the repository with “git clone” and move all the files and folder to the new repo. 
@@ -68,7 +68,7 @@ To create and set up the Jenkins server, follow these steps:
 
 1. Navigate to the Jenkins project directory:
     ```sh
-    cd superloop-technical-assessment/terraform-jenkins-server
+    cd jenkins-k8s-terraform/terraform-jenkins-server
     ```
 
 2. Make the following changes before running the Terraform commands:
@@ -181,7 +181,7 @@ To clean up and destroy all resources, follow these steps:
 
 5. To delete the Jenkins Server, navigate to the Jenkins project directory:
     ```sh
-    cd superloop-technical-assessment/terraform-jenkins-server
+    cd jenkins-k8s-terraform/terraform-jenkins-server
     ```
 
 6. Run the Terraform commands to destroy the Jenkins server in AWS:
