@@ -143,7 +143,6 @@ To deploy the EKS cluster, follow these steps:
    ![alt text](images/image-25.png)
 
 3. Select your branch "main" and write "Jenkinsfile" in the script path field. Click save.
-   ![alt text](images/image-12.png)
 
 4. Before clicking "Build Now", install the AnsiColor plugin on your Jenkins server. Go to Manage Jenkins -> Plugins -> Available plugins -> Search for AnsiColor and Docker -> select Ansicolor, Docker and Docker Pipeline (Required for the enxt pipeline)-> Click Install.
    ![alt text](images/image-13.png)
@@ -168,7 +167,7 @@ To deploy Nginx web server using Dockerfile and K8 Deployment and Service, follo
 2. Scroll to the bottom of the page and under Pipeline, select "Pipeline script from SCM". Choose "Git" and provide your GitHub Repository URL. Select the credentials defined earlier.
    ![alt text](images/image-25.png)
 
-3. Select your branch and write "Jenkinsfile-build-deploy-nginx" in the script path field. Click save.
+3. Select the 'main' branch and write "Jenkinsfile-build-deploy-nginx" in the script path field. Click save.
    ![alt text](images/image-17.png)
 
 4. Run the Jenkins job to deploy the Nginx web page. Click on "Build Now".
