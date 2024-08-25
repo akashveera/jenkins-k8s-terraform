@@ -5,3 +5,6 @@ ecr_name = "nginx-web-server"
 cluster_name = "test-eks"
 cluster_version = "1.30"
 vpc_name = "eks-vpc"
+s3_terraform_bucket = "" # Name of the same S3 bucket used in creating Jenkins server.
+creator_principal_arn = "" # IAM user ARN who created the EKS cluster
+console_user_principal_arn = "" # IAM user/role ARN who has console access to the EKS cluster

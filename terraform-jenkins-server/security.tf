@@ -4,13 +4,13 @@ resource "aws_default_security_group" "default-sg" {
     from_port   = 22
     to_port     = 22
     protocol    = "tcp"
-    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"] # provide your IP address to access Jenkis server
+    cidr_blocks = var.ssh_access_cidrs
   }
   ingress {
     from_port   = 8080
     to_port     = 8080
     protocol    = "tcp"
-    cidr_blocks = ["122.151.242.252/32", "206.83.112.213/32"] # provide your IP address to access jenkins web ui
+    cidr_blocks = var.jenkins_ui_access_cidrs
   }
   egress {
     from_port   = 0

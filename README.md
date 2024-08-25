@@ -38,27 +38,24 @@ Before running this project, make sure you have the following prerequisites:
 
 - AWS Account
 - Git installed on your local computer.
-- EC2 Key pair for your Jenkins server - use the same name in the key_name section of the Jenkins server.
-- Terraform installed on your local computer.
-- IAM credentials with enough permissions to create resources in AWS and programmatic access keys.
-- AWS credentials set up locally with aws configure.
+- Terraform installed on your local computer. 
+- Visual Studio Code Installed on your computer. https://www.linkedin.com/pulse/working-terraform-git-visual-studio-code-shubham-kumar-jain
 - Create S3 bucket to store the Terraform state file.
-- Create a new git repository, So Jenkins need to access to this code to do the deployment for us.
+- Create IAM user with enough permissions to create resources in AWS.
+- Create programmatic access keys for the IAM user so that terraform can create resources in AWS. 
+- Set up AWS credentials locally with aws configure. 
+- EC2 Key pair for your Jenkins server - use the same name in the key_name section of the Jenkins server.
 
 ## Installation
 To install and set up the project, follow these steps:
+1. Fork the Git repository to your personal account and update the repo name starting with your name.
+   ![alt text](images/image-23.png)
+   ![alt text](images/image-24.png)
 
-1. Clone the repository:
+2. Clone your forked repository on your local computer.
     ```sh
-    git clone https://github.com/akashveera/jenkins-k8s-terraform.git
+    git clone https://github.com/arqgrp-akashveerabomma/akash-jenkins-k8s-terraform.git
     ```
-
-2. Navigate to the project directory:
-    ```sh
-    cd jenkins-k8s-terraform
-    ```
-3. Create a new GitHub repository and name it “my-jenkins-pipeline” or call it whatever you want. Leave it public and do not add a README.md file.
-   Then pull down the repository with “git clone” and move all the files and folder to the new repo. 
 
 ## Running the Project
 This project is divided into four major sections:
@@ -66,20 +63,29 @@ This project is divided into four major sections:
 ### Jenkins Server Creation and Setup
 To create and set up the Jenkins server, follow these steps:
 
-1. Navigate to the Jenkins project directory:
+1. **Prepare Configuration Files**:
+   - **Update `terraform.tfvars` in `terraform-jenkins-server` folder**:
+     - Set `key_name` to your EC2 key pair name created earlier.
+     - Set `ssh_access_cidrs` and `jenkins_ui_access_cidrs` to your laptop's public IP address for SSH and browser access.
+     - Set `s3_terraform_bucket` to the name of the S3 bucket you created earlier.
+     - Save the file.
+   - **Update `terraform.tfvars` in `terraform-eks-deployment` folder**:
+     - Set `s3_terraform_bucket` to the name of the S3 bucket you created earlier.
+     - Set `creator_principal_arn` and `console_user_principal_arn` to the IAM user/role ARNs who created the EKS cluster and need console access.
+     - Save the file.
+   - **Update `Jenkinsfile-build-deploy-nginx`**:
+     - Set `AWS_ACCOUNT_ID` to your AWS account ID.
+     - Save the file.
+
+2. **Push Changes to Remote Repository**:
+   - Commit and push the changes to the main branch of your remote Git repository.
+
+3. **Navigate to the Jenkins Project Directory**:
     ```sh
-    cd jenkins-k8s-terraform/terraform-jenkins-server
+    cd akash-jenkins-k8s-terraform/terraform-jenkins-server
     ```
 
-2. Make the following changes before running the Terraform commands:
-   - Update the key_name in the server.tf file to your EC2 key pair name.
-   - Update the IP address in the security.tf file to access the Jenkins server via SSH and browser. Note: use your laptop public IP address. 
-   - Update the instance_type in the terraform.tfvars file to your preferred instance type.
-   - Update the s3 bucket name that you created earlier in the backend.tf file.
-   - Update aws principal_arn in the eks.tf file to your Iam user that you created earlier. So that iam user has access to the eks cluster. 
-   - Update AWS_ACCOUNT_ID in the Jenkinsfile-build-deploy-nginx file with your AWS account ID.
-
-3. Run the Terraform commands to deploy the Jenkins server in AWS:
+4. **Run the Terraform Commands to Deploy the Jenkins Server in AWS**:
     ```sh
     terraform init
     terraform validate
@@ -89,7 +95,7 @@ To create and set up the Jenkins server, follow these steps:
 
     Make a note of the public IP address of your Jenkins server, which will be printed in the console.
 
-4. Access and set up the Jenkins server with GitHub and AWS credentials:
+5. **Access and Set Up the Jenkins Server with GitHub and AWS Credentials**:
    1. Paste the IP address into your web browser's address bar, followed by ':8080'. The Jenkins server welcome page should appear.
    ![alt text](images/image-1.png)
 
