@@ -12,7 +12,7 @@ module "eks" {
     access_entries = {
         jenkins_user = {
             kubernetes_groups = []
-            principal_arn     = "arn:aws:iam::680729924294:user/jenkins-aws-terraform-user"
+            principal_arn     = var.creator_principal_arn
 
             policy_associations = {
                 example = {
@@ -25,7 +25,7 @@ module "eks" {
         },
         aws_console_user = {
             kubernetes_groups = []
-            principal_arn     = "arn:aws:iam::680729924294:role/AWS-486_Akash_Veerabomma_AcctAdmin"
+            principal_arn     = var.console_user_principal_arn
             policy_associations = {
                 example = {
                     policy_arn = "arn:aws:eks::aws:cluster-access-policy/AmazonEKSClusterAdminPolicy"
