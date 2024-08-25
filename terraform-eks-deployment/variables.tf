@@ -25,12 +25,6 @@ variable "cluster_version" {
 variable "vpc_name" {
   description = "Name of the VPC"
 }
-variable "s3_terraform_bucket" {
-    type = string
-    description =  "Name of the S3 bucket for storing Terraform state files"
-    default = "jenkins-terraform-kubernetes"
-}
-
 variable "creator_principal_arn" {
   description = "IAM user ARN who created the EKS cluster"
   type        = string

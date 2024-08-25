@@ -6,4 +6,3 @@ instance_type           = "t2.small" # EC2 instance type
 key_name                = "" # ec2 key pair name that you created earlier before start of the project.
 ssh_access_cidrs        = [""] # List of CIDR blocks for SSH access to Jenkins server
 jenkins_ui_access_cidrs = [""] # List of CIDR blocks for accessing Jenkins web UI
-s3_terraform_bucket     = "" # Name of the S3 bucket for storing Terraform state files

@@ -33,9 +33,3 @@ variable "jenkins_ui_access_cidrs" {
     type        = list(string)
     default     = ["0.0.0.0/0"] # Replace with your IP addresses in the tfvars file 
 }
-
-variable "s3_terraform_bucket" {
-    type = string
-    description =  "Name of the S3 bucket for storing Terraform state files"
-    default = "jenkins-terraform-kubernetes"
-}

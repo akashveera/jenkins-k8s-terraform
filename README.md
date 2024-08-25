@@ -67,11 +67,12 @@ To create and set up the Jenkins server, follow these steps:
    - **Update `terraform.tfvars` in `terraform-jenkins-server` folder**:
      - Set `key_name` to your EC2 key pair name created earlier.
      - Set `ssh_access_cidrs` and `jenkins_ui_access_cidrs` to your laptop's public IP address for SSH and browser access.
-     - Set `s3_terraform_bucket` to the name of the S3 bucket you created earlier.
      - Save the file.
    - **Update `terraform.tfvars` in `terraform-eks-deployment` folder**:
-     - Set `s3_terraform_bucket` to the name of the S3 bucket you created earlier.
      - Set `creator_principal_arn` and `console_user_principal_arn` to the IAM user/role ARNs who created the EKS cluster and need console access.
+     - Save the file.
+   - **Update `backend.tf` in `terraform-eks-deployment` and `terraform-jenkins-server` folder**:
+     - Set `bucket` to the name of the S3 bucket you created earlier.
      - Save the file.
    - **Update `Jenkinsfile-build-deploy-nginx`**:
      - Set `AWS_ACCOUNT_ID` to your AWS account ID.
@@ -139,7 +140,7 @@ To deploy the EKS cluster, follow these steps:
    ![alt text](images/image-10.png)
 
 2. Click OK and then scroll to the bottom of the page. Under Pipeline, select "Pipeline script from SCM" and choose "Git". Provide your GitHub Repository URL and select the credentials defined earlier.
-   ![alt text](images/image-11.png)
+   ![alt text](images/image-25.png)
 
 3. Select your branch "main" and write "Jenkinsfile" in the script path field. Click save.
    ![alt text](images/image-12.png)
@@ -165,7 +166,7 @@ To deploy Nginx web server using Dockerfile and K8 Deployment and Service, follo
    ![alt text](images/image-16.png)
 
 2. Scroll to the bottom of the page and under Pipeline, select "Pipeline script from SCM". Choose "Git" and provide your GitHub Repository URL. Select the credentials defined earlier.
-   ![alt text](images/image-11.png)
+   ![alt text](images/image-25.png)
 
 3. Select your branch and write "Jenkinsfile-build-deploy-nginx" in the script path field. Click save.
    ![alt text](images/image-17.png)
@@ -188,7 +189,7 @@ To clean up and destroy all resources, follow these steps:
 
 5. To delete the Jenkins Server, navigate to the Jenkins project directory:
     ```sh
-    cd jenkins-k8s-terraform/terraform-jenkins-server
+    cd akash-jenkins-k8s-terraform/terraform-jenkins-server
     ```
 
 6. Run the Terraform commands to destroy the Jenkins server in AWS:
