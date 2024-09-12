@@ -5,5 +5,5 @@ ecr_name = "nginx-web-server"
 cluster_name = "test-eks"
 cluster_version = "1.30"
 vpc_name = "eks-vpc"
-creator_principal_arn = "" # IAM user ARN who created the EKS cluster
-console_user_principal_arn = "" # IAM user/role ARN who has console access to the EKS cluster
+creator_principal_arn = "arn:aws:iam::680729924294:user/jenkins-aws-terraform-user" # IAM user ARN who created the EKS cluster
+console_user_principal_arn = "arn:aws:iam::680729924294:role/AWS-486_Akash_Veerabomma_AcctAdmin" # IAM user/role ARN who has console access to the EKS cluster
